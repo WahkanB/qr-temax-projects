@@ -1,8 +1,7 @@
 {
+  "buildCommand": "npx expo export",
+  "outputDirectory": "dist",
   "routes": [
-    {
-      "src": "^/$",
-      "dest": "/p/bathroom_001"
-    }
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
