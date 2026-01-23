@@ -23,15 +23,19 @@ export default function HomeScreen() {
   }
 
   const onBarcodeScanned = ({ data }: { data: string }) => {
-    const code = String(data || "").trim();
-    if (!code) return;
+  const raw = String(data || "").trim();
+  if (!raw) return;
 
-    setScanned(true);
-    setCameraOn(false); // спира камерата веднага
+  // приема и "bathroom_001" и "https://site.com/p/bathroom_001"
+  let code = raw;
+  const m = raw.match(/\/p\/([^/?#]+)/i);
+  if (m?.[1]) code = decodeURIComponent(m[1]);
 
-    // отива към /p/[code]
-    router.push(`/p/${encodeURIComponent(code)}`);
-  };
+  setScanned(true);
+  setCameraOn(false);
+  router.push(`/p/${encodeURIComponent(code)}`);
+};
+
 
   return (
     <View style={styles.container}>
