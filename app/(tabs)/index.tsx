@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraOn, setCameraOn] = useState(false);
   const [scanned, setScanned] = useState(false);
 
-  if (!permission) {
-    return <View />;
-  }
+  if (!permission) return <View />;
 
   if (!permission.granted) {
     return (
@@ -23,23 +23,34 @@ export default function HomeScreen() {
   }
 
   const onBarcodeScanned = ({ data }: { data: string }) => {
+    const code = String(data || "").trim();
+    if (!code) return;
+
     setScanned(true);
-    setCameraOn(false); // ⛔ СПИРА камерата
-    alert("QR код: " + data);
+    setCameraOn(false); // спира камерата веднага
+
+    // отива към /p/[code]
+    router.push(`/p/${encodeURIComponent(code)}`);
   };
 
   return (
     <View style={styles.container}>
-      {!cameraOn && (
-        <Pressable style={styles.btn} onPress={() => {
-          setScanned(false);
-          setCameraOn(true);
-        }}>
-          <Text style={styles.btnText}>📷 Сканирай QR код</Text>
-        </Pressable>
-      )}
+      {!cameraOn ? (
+        <>
+          <Text style={styles.h1}>QR Scanner</Text>
+          <Text style={styles.p}>Сканирай код и виж проекта веднага.</Text>
 
-      {cameraOn && (
+          <Pressable
+            style={styles.btn}
+            onPress={() => {
+              setScanned(false);
+              setCameraOn(true);
+            }}
+          >
+            <Text style={styles.btnText}>📷 Сканирай QR код</Text>
+          </Pressable>
+        </>
+      ) : (
         <>
           <CameraView
             style={styles.camera}
@@ -55,41 +66,15 @@ export default function HomeScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  camera: {
-    width: "100%",
-    height: 400,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  btn: {
-    backgroundColor: "#2563eb",
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  stopBtn: {
-    backgroundColor: "#111827",
-    padding: 14,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  btnText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff", padding: 18 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 18 },
+  h1: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
+  p: { fontSize: 15, color: "#444", marginBottom: 14, textAlign: "center" },
+  text: { fontSize: 16, marginBottom: 12, textAlign: "center" },
+  camera: { width: "100%", height: 420, borderRadius: 14, overflow: "hidden" },
+  btn: { backgroundColor: "#2563eb", paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12 },
+  stopBtn: { backgroundColor: "#111827", paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, marginTop: 10 },
+  btnText: { color: "white", fontSize: 16, fontWeight: "700" },
 });
