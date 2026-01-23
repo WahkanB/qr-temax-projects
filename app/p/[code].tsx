@@ -1,4 +1,3 @@
-// app/p/[code].tsx
 import React, { useMemo, useState } from "react";
 import {
   View,
@@ -8,544 +7,254 @@ import {
   Image,
   StyleSheet,
   Dimensions,
-  Platform,
-  Linking,
-  Alert,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 
-// ===== TEMAX COLOR PALETTE =====
+/* ================= TEMAX COLORS ================= */
 const COLORS = {
-  bg: "#0f1115", // основен фон
-  card: "#161a22", // карти
-  border: "#262b36", // бордери
-  text: "#ffffff", // основен текст
-  muted: "#b3b6bf", // вторичен текст
-  red: "#c4161c", // акцент червено
-  redDark: "#9f1217",
+  bg: "#ffffff",
+  header: "#2b2b2b",
+  card: "#f6f6f6",
+  border: "#e5e5e5",
+  text: "#111111",
+  muted: "#666666",
+  red: "#c4161c",
 };
 
-// ===== DATA TYPES =====
-type ProjectItem = {
-  sku: string; // ваш артикулен код
-  name: string; // име на продукта
-  qty?: string; // количество (по желание)
-  note?: string; // бележка (по желание)
-};
-
-type Project = {
-  code: string;
-  title: string;
-  subtitle?: string;
-  tags?: string[];
-  images: string[]; // URL-и на снимки
-  idea?: string;
-  materials?: ProjectItem[];
-  contactUrl?: string; // WhatsApp / сайт / форма
-};
-
-// ===== DEMO DATA (после можеш да го изнесеш в constants/projects.ts) =====
-const PROJECTS: Record<string, Project> = {
+/* ================= DATA ================= */
+const PROJECTS: Record<string, any> = {
   bathroom_001: {
-    code: "bathroom_001",
     title: "Баня • Проект 001",
-    subtitle: "Гранитогрес + мебели от нашия магазин",
-    tags: ["60×120", "черни акценти", "LED ниша", "огледало LED"],
+    subtitle: "Гранитогрес + мебели от Temax",
+    tags: ["60×120", "черни акценти", "LED ниша", "LED огледало"],
     images: [
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1600&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?w=1600&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1600&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1600",
+      "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?w=1600",
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1600",
     ],
     idea:
-      "Съвременна баня в светли тонове: голямоформатни плочки 60×120, черни акценти, ниша в душа с LED лента и огледало с подсветка.",
+      "Съвременна баня в светли тонове с голямоформатни плочки 60×120, черни смесители и LED акценти.",
     materials: [
-      { sku: "GR-60120-CL01", name: "Гранитогрес 60×120 (светъл камък)", qty: "18 м²" },
-      { sku: "PR-BLACK-SET", name: "Черни смесители комплект", qty: "1 бр", note: "мат" },
-      { sku: "LED-IP65-3000K", name: "LED лента IP65 3000K", qty: "3 м" },
-      { sku: "MIR-LED-80", name: "Огледало LED 80 см", qty: "1 бр" },
+      { sku: "GR-60120", name: "Гранитогрес 60×120", qty: "18 м²" },
+      { sku: "MX-BLACK", name: "Черни смесители", qty: "1 комплект" },
+      { sku: "LED-3000K", name: "LED лента 3000K", qty: "3 м" },
     ],
-    // Сложи твоя реален WhatsApp (примерният е фиктивен)
-    contactUrl: "https://wa.me/359000000000?text=Здравейте!%20Интересува%20ме%20проект%20bathroom_001",
   },
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={s.section}>
-      <Text style={s.sectionTitle}>{title}</Text>
-      <View style={s.sectionBody}>{children}</View>
-    </View>
-  );
-}
-
 export default function ProjectPage() {
   const { code } = useLocalSearchParams<{ code?: string }>();
-  const safeCode = String(code || "").trim();
-
-  const project = useMemo(() => PROJECTS[safeCode], [safeCode]);
-
+  const project = useMemo(() => PROJECTS[String(code)], [code]);
   const [active, setActive] = useState(0);
-  const W = Dimensions.get("window").width;
-  const heroH = Math.round(W * 0.62);
 
-  const copyLink = async (url: string) => {
-    if (Platform.OS === "web" && typeof navigator !== "undefined" && "clipboard" in navigator) {
-      // @ts-ignore
-      await navigator.clipboard.writeText(url);
-      Alert.alert("Готово", "Линкът е копиран.");
-      return;
-    }
-    Alert.alert("Линк", url);
-  };
+  const W = Dimensions.get("window").width;
+  const sliderW = W - 32;
+  const sliderH = Math.round(sliderW * 0.6);
 
   if (!project) {
     return (
-      <ScrollView style={s.page} contentContainerStyle={s.notFoundWrap}>
-        <Text style={s.notFoundTitle}>Проектът не е намерен</Text>
-        <Text style={s.notFoundText}>Код: {safeCode || "—"}</Text>
-        <Text style={[s.notFoundText, { marginTop: 6 }]}>
-          Провери QR кода или адреса.
-        </Text>
-
-        <Pressable style={s.btnPrimary} onPress={() => router.replace("/")}>
-          <Text style={s.btnPrimaryText}>Към началото</Text>
-        </Pressable>
-      </ScrollView>
+      <View style={s.center}>
+        <Text>Проектът не е намерен</Text>
+      </View>
     );
   }
 
-  const onAsk = async () => {
-    if (!project.contactUrl) return;
-    try {
-      await Linking.openURL(project.contactUrl);
-    } catch {
-      Alert.alert("Грешка", "Не успях да отворя линка за контакт.");
-    }
-  };
-
-  const shareUrl =
-    Platform.OS === "web" && typeof window !== "undefined"
-      ? window.location.href
-      : `https://max-projects.vercel.app/p/${encodeURIComponent(project.code)}`;
-
   return (
-    <ScrollView style={s.page} contentContainerStyle={s.content}>
-      {/* HEADER (Temax style) */}
+    <ScrollView style={s.page}>
+      {/* ============ HEADER ============ */}
       <View style={s.header}>
-        {/* Placeholder for your logo (you'll replace later with <Image/>) */}
-        <View style={s.logoPlaceholder}>
+        <View style={s.logoBox}>
           <Text style={s.logoText}>LOGO</Text>
         </View>
-
-        <View style={{ flex: 1 }}>
-          <Text style={s.brand}>TEMAX</Text>
-          <Text style={s.brandSub}>Готови интериорни проекти</Text>
-        </View>
-
-        <Pressable style={s.backBtn} onPress={() => router.back()}>
-          <Text style={s.backText}>Назад</Text>
-        </Pressable>
+        <Text style={s.headerTitle}>Готов проект</Text>
       </View>
 
-      {/* HERO / GALLERY */}
-      <View style={s.heroCard}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={(e) => {
-            const x = e.nativeEvent.contentOffset.x;
-            const idx = Math.round(x / (W - 32)); // ширината на hero
-            setActive(Math.max(0, Math.min(idx, project.images.length - 1)));
-          }}
-        >
-          {project.images.map((uri, idx) => (
-            <View key={uri + idx} style={{ width: W - 32, height: heroH }}>
-              <Image source={{ uri }} style={s.heroImg} />
-              <View style={s.heroOverlay} />
-            </View>
-          ))}
-        </ScrollView>
+      {/* ============ CONTENT ============ */}
+      <View style={s.container}>
+        {/* Slider */}
+        <View style={s.sliderCard}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const i = Math.round(
+                e.nativeEvent.contentOffset.x / sliderW
+              );
+              setActive(i);
+            }}
+          >
+            {project.images.map((img: string, i: number) => (
+              <Image
+                key={i}
+                source={{ uri: img }}
+                style={{ width: sliderW, height: sliderH }}
+              />
+            ))}
+          </ScrollView>
 
-        <View style={s.dotsRow}>
-          {project.images.map((_, idx) => (
-            <View key={idx} style={[s.dot, idx === active ? s.dotActive : null]} />
-          ))}
-        </View>
-
-        <View style={s.heroMeta}>
-          <Text style={s.codeText}>{project.code}</Text>
-          <Text style={s.title}>{project.title}</Text>
-          {!!project.subtitle && <Text style={s.subtitle}>{project.subtitle}</Text>}
-
-          {!!project.tags?.length && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
-              {project.tags.map((t) => (
-                <View key={t} style={s.tag}>
-                  <Text style={s.tagText}>{t}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-      </View>
-
-      {/* IDEA */}
-      {!!project.idea && (
-        <Section title="Идея">
-          <Text style={s.paragraph}>{project.idea}</Text>
-        </Section>
-      )}
-
-      {/* MATERIALS */}
-      {!!project.materials?.length && (
-        <Section title="Използвани материали">
-          <View style={{ marginTop: 2 }}>
-            {project.materials.map((m) => (
-              <View key={m.sku} style={s.itemCard}>
-                <View style={s.itemTop}>
-                  <Text style={s.itemName}>{m.name}</Text>
-                  {!!m.qty && <Text style={s.qty}>{m.qty}</Text>}
-                </View>
-
-                <View style={s.itemBottom}>
-                  <Text style={s.skuText}>Код: {m.sku}</Text>
-                  {!!m.note && <Text style={s.note}>{m.note}</Text>}
-                </View>
-              </View>
+          <View style={s.dots}>
+            {project.images.map((_: any, i: number) => (
+              <View
+                key={i}
+                style={[
+                  s.dot,
+                  i === active && { backgroundColor: COLORS.red },
+                ]}
+              />
             ))}
           </View>
-        </Section>
-      )}
+        </View>
 
-      {/* CTA */}
-      <View style={s.ctaCard}>
-        <Text style={s.ctaTitle}>Искаш оферта по този проект?</Text>
-        <Text style={s.ctaText}>
-          Изпрати ни кода <Text style={s.ctaCode}>{project.code}</Text> и ще ти дадем цена и наличности.
-        </Text>
+        {/* Title */}
+        <Text style={s.title}>{project.title}</Text>
+        <Text style={s.subtitle}>{project.subtitle}</Text>
 
-        <Pressable style={s.btnPrimary} onPress={onAsk}>
-          <Text style={s.btnPrimaryText}>Попитай за оферта</Text>
-        </Pressable>
+        {/* Tags */}
+        <View style={s.tags}>
+          {project.tags.map((t: string) => (
+            <View key={t} style={s.tag}>
+              <Text style={s.tagText}>{t}</Text>
+            </View>
+          ))}
+        </View>
 
-        <Pressable style={s.btnGhost} onPress={() => copyLink(shareUrl)}>
-          <Text style={s.btnGhostText}>Копирай линк</Text>
+        {/* Idea */}
+        <View style={s.card}>
+          <Text style={s.cardTitle}>Идея</Text>
+          <Text style={s.text}>{project.idea}</Text>
+        </View>
+
+        {/* Materials */}
+        <View style={s.card}>
+          <Text style={s.cardTitle}>Използвани материали</Text>
+          {project.materials.map((m: any) => (
+            <View key={m.sku} style={s.material}>
+              <Text style={s.materialName}>{m.name}</Text>
+              <Text style={s.materialMeta}>
+                Код: {m.sku} • {m.qty}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* CTA */}
+        <Pressable style={s.cta}>
+          <Text style={s.ctaText}>Поискай оферта за този проект</Text>
         </Pressable>
       </View>
-
-      <Text style={s.footer}>© {new Date().getFullYear()} TEMAX • Projects</Text>
     </ScrollView>
   );
 }
 
+/* ================= STYLES ================= */
 const s = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
+  page: { backgroundColor: COLORS.bg, flex: 1 },
 
-  content: {
-    padding: 16,
-    paddingBottom: 28,
-  },
-
-  /* HEADER */
   header: {
+    backgroundColor: COLORS.header,
+    padding: 16,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginBottom: 14,
   },
-
-  logoPlaceholder: {
-    width: 54,
-    height: 54,
-    borderRadius: 12,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  logoBox: {
+    width: 48,
+    height: 48,
+    backgroundColor: "#444",
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 6,
   },
-
-  logoText: {
-    color: COLORS.muted,
-    fontSize: 10,
+  logoText: { color: "#ccc", fontSize: 10 },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "700",
   },
 
-  brand: {
-    color: COLORS.text,
-    fontSize: 20,
-    fontWeight: "900",
-    letterSpacing: 0.5,
-  },
+  container: { padding: 16 },
 
-  brandSub: {
-    color: COLORS.muted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-
-  backBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  sliderCard: {
+    backgroundColor: "#fff",
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backText: {
-    color: COLORS.text,
-    fontSize: 12,
-    fontWeight: "900",
-  },
-
-  /* HERO */
-  heroCard: {
-    borderRadius: 18,
     overflow: "hidden",
-    backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
-  heroImg: {
-    width: "100%",
-    height: "100%",
-  },
-
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.18)",
-  },
-
-  dotsRow: {
-    position: "absolute",
-    bottom: 12,
-    left: 16,
+  dots: {
     flexDirection: "row",
+    justifyContent: "center",
+    padding: 8,
     gap: 6,
   },
-
   dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 99,
-    backgroundColor: "#555",
-  },
-
-  dotActive: {
-    backgroundColor: COLORS.red,
-  },
-
-  heroMeta: {
-    padding: 14,
-  },
-
-  codeText: {
-    color: COLORS.red,
-    fontSize: 12,
-    fontWeight: "800",
-    marginBottom: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
   },
 
   title: {
+    fontSize: 24,
+    fontWeight: "800",
+    marginTop: 16,
     color: COLORS.text,
-    fontSize: 26,
-    fontWeight: "900",
   },
-
   subtitle: {
-    color: COLORS.muted,
     fontSize: 14,
-    marginTop: 6,
-    lineHeight: 20,
+    color: COLORS.muted,
+    marginBottom: 12,
   },
 
+  tags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 16,
+  },
   tag: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  tagText: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-
-  /* SECTION */
-  section: {
-    marginTop: 14,
-    borderRadius: 18,
     backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: "hidden",
-  },
-
-  sectionTitle: {
-    paddingHorizontal: 14,
-    paddingTop: 14,
-    paddingBottom: 10,
-    color: COLORS.text,
-    fontSize: 18,
-    fontWeight: "900",
-  },
-
-  sectionBody: {
-    paddingHorizontal: 14,
-    paddingBottom: 14,
-  },
-
-  paragraph: {
-    color: COLORS.muted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-
-  /* MATERIALS */
-  itemCard: {
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: "#1c212c",
-    marginBottom: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.red,
-  },
-
-  itemTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-
-  itemName: {
-    flex: 1,
-    color: COLORS.text,
-    fontSize: 15,
-    fontWeight: "800",
-    lineHeight: 20,
-  },
-
-  qty: {
-    color: COLORS.text,
-    fontSize: 13,
-    fontWeight: "800",
-  },
-
-  itemBottom: {
-    marginTop: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-
-  skuText: {
-    color: COLORS.muted,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-
-  note: {
-    color: "rgba(255,255,255,0.65)",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-
-  /* CTA */
-  ctaCard: {
-    marginTop: 18,
-    borderRadius: 18,
-    padding: 16,
-    backgroundColor: COLORS.card,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  tagText: { fontSize: 12, fontWeight: "600" },
 
-  ctaTitle: {
-    color: COLORS.text,
+  card: {
+    backgroundColor: COLORS.card,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  cardTitle: {
     fontSize: 16,
-    fontWeight: "900",
+    fontWeight: "700",
+    marginBottom: 6,
   },
+  text: { fontSize: 14, color: COLORS.muted, lineHeight: 20 },
 
-  ctaText: {
-    marginTop: 6,
-    color: COLORS.muted,
-    fontSize: 14,
-    lineHeight: 20,
+  material: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
+  materialName: { fontWeight: "600" },
+  materialMeta: { fontSize: 12, color: COLORS.muted },
 
-  ctaCode: {
-    color: COLORS.red,
-    fontWeight: "900",
-  },
-
-  btnPrimary: {
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 14,
+  cta: {
     backgroundColor: COLORS.red,
+    padding: 16,
+    borderRadius: 12,
     alignItems: "center",
   },
-
-  btnPrimaryText: {
+  ctaText: {
     color: "#fff",
+    fontWeight: "800",
     fontSize: 15,
-    fontWeight: "900",
-    letterSpacing: 0.3,
   },
 
-  btnGhost: {
-    marginTop: 10,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: COLORS.red,
-    alignItems: "center",
-  },
-
-  btnGhostText: {
-    color: COLORS.red,
-    fontSize: 15,
-    fontWeight: "900",
-  },
-
-  footer: {
-    marginTop: 18,
-    textAlign: "center",
-    color: COLORS.muted,
-    fontSize: 12,
-  },
-
-  /* NOT FOUND */
-  notFoundWrap: {
-    flexGrow: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    backgroundColor: COLORS.bg,
-  },
-  notFoundTitle: {
-    color: COLORS.text,
-    fontSize: 22,
-    fontWeight: "900",
-    textAlign: "center",
-  },
-  notFoundText: {
-    marginTop: 8,
-    color: COLORS.muted,
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 10,
-  },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
 });
