@@ -16,7 +16,7 @@ const COLORS = {
   header: "#2b2b2b",
   card: "#E2222E",
   border: "#e5e5e5",
-  text: "#111111",
+  text: "#ffffff",
   muted: "#666666",
   red: "#E2222E",
 };
