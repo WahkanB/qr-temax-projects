@@ -17,7 +17,7 @@ const COLORS = {
   card: "#f6f6f6",
   border: "#e5e5e5",
   text: "#111111",
-  muted: "#666666",
+  muted: "#E2222E",
   red: "#E2222E",
 };
 
