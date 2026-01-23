@@ -14,10 +14,10 @@ import { useLocalSearchParams, router } from "expo-router";
 const COLORS = {
   bg: "#ffffff",
   header: "#2b2b2b",
-  card: "#f6f6f6",
+  card: "#E2222E",
   border: "#e5e5e5",
   text: "#111111",
-  muted: "#E2222E",
+  muted: "#666666",
   red: "#E2222E",
 };
 
