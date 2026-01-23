@@ -1,84 +1,98 @@
-import { useState } from "react";
-import { Text, View, StyleSheet, Pressable } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { useRouter } from "expo-router";
+// app/(tabs)/index.tsx
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { CameraView } from "expo-camera";
+import { router } from "expo-router";
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permissionAsked, setPermissionAsked] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [scanned, setScanned] = useState(false);
 
-  if (!permission) return <View />;
-
-  if (!permission.granted) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.text}>Нужен е достъп до камерата</Text>
-        <Pressable style={styles.btn} onPress={requestPermission}>
-          <Text style={styles.btnText}>Разреши камера</Text>
-        </Pressable>
-      </View>
-    );
-  }
+  const requestPermission = async () => {
+    setPermissionAsked(true);
+    setCameraOn(true);
+    setScanned(false);
+  };
 
   const onBarcodeScanned = ({ data }: { data: string }) => {
-  const raw = String(data || "").trim();
-  if (!raw) return;
+    if (scanned) return;
+    const raw = String(data || "").trim();
+    if (!raw) return;
 
-  // приема и "bathroom_001" и "https://site.com/p/bathroom_001"
-  let code = raw;
-  const m = raw.match(/\/p\/([^/?#]+)/i);
-  if (m?.[1]) code = decodeURIComponent(m[1]);
+    let code = raw;
+    const m = raw.match(/\/p\/([^/?#]+)/i);
+    if (m?.[1]) code = decodeURIComponent(m[1]);
 
-  setScanned(true);
-  setCameraOn(false);
-  router.push(`/p/${encodeURIComponent(code)}`);
-};
-
+    setScanned(true);
+    setCameraOn(false);
+    router.push(`/p/${encodeURIComponent(code)}`);
+  };
 
   return (
-    <View style={styles.container}>
-      {!cameraOn ? (
-        <>
-          <Text style={styles.h1}>QR Scanner</Text>
-          <Text style={styles.p}>Сканирай код и виж проекта веднага.</Text>
+    <View style={s.page}>
+      <View style={s.top}>
+        <Text style={s.brand}>QR Showroom</Text>
+        <Text style={s.sub}>Сканирай QR и виж готови проекти с материали от магазина.</Text>
+      </View>
 
-          <Pressable
-            style={styles.btn}
-            onPress={() => {
-              setScanned(false);
-              setCameraOn(true);
-            }}
-          >
-            <Text style={styles.btnText}>📷 Сканирай QR код</Text>
-          </Pressable>
-        </>
-      ) : (
-        <>
-          <CameraView
-            style={styles.camera}
-            barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-            onBarcodeScanned={scanned ? undefined : onBarcodeScanned}
-          />
+      <View style={s.card}>
+        {!cameraOn ? (
+          <>
+            <Text style={s.h2}>Сканиране</Text>
+            <Text style={s.note}>
+              {permissionAsked ? "Натисни пак, ако браузърът е отказал камерата." : "Ще поиска разрешение за камера."}
+            </Text>
 
-          <Pressable style={styles.stopBtn} onPress={() => setCameraOn(false)}>
-            <Text style={styles.btnText}>⛔ Спри камерата</Text>
-          </Pressable>
-        </>
-      )}
+            <Pressable style={[s.btn, s.btnPrimary]} onPress={requestPermission}>
+              <Text style={s.btnText}>📷 Сканирай QR код</Text>
+            </Pressable>
+
+            <Pressable style={[s.btn, s.btnDark]} onPress={() => router.push("/p/bathroom_001")}>
+              <Text style={s.btnText}>Виж пример (bathroom_001)</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text style={s.h2}>Насочи камерата към QR кода</Text>
+            <View style={s.cameraWrap}>
+              <CameraView
+                style={s.camera}
+                facing="back"
+                barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+                onBarcodeScanned={onBarcodeScanned}
+              />
+            </View>
+
+            <Pressable style={[s.btn, s.btnDark]} onPress={() => setCameraOn(false)}>
+              <Text style={s.btnText}>Затвори камерата</Text>
+            </Pressable>
+          </>
+        )}
+      </View>
+
+      <Text style={s.footer}>© Showroom • Темакс</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff", padding: 18 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 18 },
-  h1: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
-  p: { fontSize: 15, color: "#444", marginBottom: 14, textAlign: "center" },
-  text: { fontSize: 16, marginBottom: 12, textAlign: "center" },
-  camera: { width: "100%", height: 420, borderRadius: 14, overflow: "hidden" },
-  btn: { backgroundColor: "#2563eb", paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12 },
-  stopBtn: { backgroundColor: "#111827", paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, marginTop: 10 },
-  btnText: { color: "white", fontSize: 16, fontWeight: "700" },
+const s = StyleSheet.create({
+  page: { flex: 1, backgroundColor: "#fff", padding: 18 },
+  top: { paddingTop: 6, paddingBottom: 14 },
+  brand: { fontSize: 28, fontWeight: "900", color: "#111" },
+  sub: { marginTop: 6, fontSize: 15, color: "#444", lineHeight: 22 },
+
+  card: { borderWidth: 1, borderColor: "#eee", borderRadius: 18, padding: 16, backgroundColor: "#fff" },
+  h2: { fontSize: 16, fontWeight: "900", color: "#111" },
+  note: { marginTop: 6, fontSize: 13, color: "#666", marginBottom: 12 },
+
+  cameraWrap: { marginTop: 12, borderRadius: 16, overflow: "hidden", backgroundColor: "#f2f2f2" },
+  camera: { width: "100%", height: 340 },
+
+  btn: { paddingVertical: 14, borderRadius: 14, alignItems: "center", justifyContent: "center", marginTop: 10 },
+  btnPrimary: { backgroundColor: "#2b6cff" },
+  btnDark: { backgroundColor: "#111827" },
+  btnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+
+  footer: { marginTop: 14, fontSize: 12, color: "#777", textAlign: "center" },
 });
