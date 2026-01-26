@@ -14,7 +14,7 @@ import { useLocalSearchParams, router } from "expo-router";
 const COLORS = {
   bg: "#ffffff",
   header: "#2b2b2b",
-  card: "#E2222E",
+  card: "#414141",
   border: "#e5e5e5",
   text: "#ffffff",
   muted: "#666666",
@@ -234,7 +234,7 @@ const s = StyleSheet.create({
     fontWeight: "700",
     marginBottom: 6,
   },
-  text: { fontSize: 14, color: COLORS.muted, lineHeight: 20 },
+  text: { fontSize: 14, color: "#fff", lineHeight: 20 },
 
   material: {
     paddingVertical: 8,
@@ -242,7 +242,7 @@ const s = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   materialName: { fontWeight: "600" },
-  materialMeta: { fontSize: 12, color: COLORS.muted },
+  materialMeta: { fontSize: 12, color:"#fff" },
 
   cta: {
     backgroundColor: COLORS.red,
