@@ -1,98 +1,73 @@
 // app/(tabs)/index.tsx
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { CameraView } from "expo-camera";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
+import { COLORS } from "../constants/theme";
 
 export default function HomeScreen() {
-  const [permissionAsked, setPermissionAsked] = useState(false);
-  const [cameraOn, setCameraOn] = useState(false);
-  const [scanned, setScanned] = useState(false);
-
-  const requestPermission = async () => {
-    setPermissionAsked(true);
-    setCameraOn(true);
-    setScanned(false);
-  };
-
-  const onBarcodeScanned = ({ data }: { data: string }) => {
-    if (scanned) return;
-    const raw = String(data || "").trim();
-    if (!raw) return;
-
-    let code = raw;
-    const m = raw.match(/\/p\/([^/?#]+)/i);
-    if (m?.[1]) code = decodeURIComponent(m[1]);
-
-    setScanned(true);
-    setCameraOn(false);
-    router.push(`/p/${encodeURIComponent(code)}`);
-  };
+  const router = useRouter();
 
   return (
     <View style={s.page}>
-      <View style={s.top}>
-        <Text style={s.brand}>QR Showroom</Text>
-        <Text style={s.sub}>Сканирай QR и виж готови проекти с материали от магазина.</Text>
+      <View style={s.header}>
+        <View style={s.logoSlot}>
+          <Text style={s.logoText}>LOGO</Text>
+        </View>
+        <Text style={s.headerTitle}>Готови проекти</Text>
       </View>
 
-      <View style={s.card}>
-        {!cameraOn ? (
-          <>
-            <Text style={s.h2}>Сканиране</Text>
-            <Text style={s.note}>
-              {permissionAsked ? "Натисни пак, ако браузърът е отказал камерата." : "Ще поиска разрешение за камера."}
-            </Text>
+      <View style={s.content}>
+        <Text style={s.h1}>Сканирай QR код</Text>
+        <Text style={s.p}>
+          Насочи камерата към QR кода на проекта, за да отвориш готовия дизайн с нашите продукти.
+        </Text>
 
-            <Pressable style={[s.btn, s.btnPrimary]} onPress={requestPermission}>
-              <Text style={s.btnText}>📷 Сканирай QR код</Text>
-            </Pressable>
+        <Pressable style={s.cta} onPress={() => router.push("/scan")}>
+          <Text style={s.ctaText}>Сканирай</Text>
+        </Pressable>
 
-            <Pressable style={[s.btn, s.btnDark]} onPress={() => router.push("/p/bathroom_001")}>
-              <Text style={s.btnText}>Виж пример (bathroom_001)</Text>
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={s.h2}>Насочи камерата към QR кода</Text>
-            <View style={s.cameraWrap}>
-              <CameraView
-                style={s.camera}
-                facing="back"
-                barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-                onBarcodeScanned={onBarcodeScanned}
-              />
-            </View>
-
-            <Pressable style={[s.btn, s.btnDark]} onPress={() => setCameraOn(false)}>
-              <Text style={s.btnText}>Затвори камерата</Text>
-            </Pressable>
-          </>
-        )}
+        <Text style={s.smallHint}>
+          * Клиентите виждат само готови проекти и материали.
+        </Text>
       </View>
-
-      <Text style={s.footer}>© Showroom • Темакс</Text>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#fff", padding: 18 },
-  top: { paddingTop: 6, paddingBottom: 14 },
-  brand: { fontSize: 28, fontWeight: "900", color: "#111" },
-  sub: { marginTop: 6, fontSize: 15, color: "#444", lineHeight: 22 },
+  page: { flex: 1, backgroundColor: COLORS.bg },
+  header: {
+    backgroundColor: COLORS.headerBg,
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  logoSlot: {
+    width: 46,
+    height: 30,
+    borderRadius: 6,
+    backgroundColor: "#00000055",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ffffff22",
+  },
+  logoText: { color: "#fff", fontSize: 11, fontWeight: "800" },
+  headerTitle: { color: "#fff", fontSize: 16, fontWeight: "800" },
 
-  card: { borderWidth: 1, borderColor: "#eee", borderRadius: 18, padding: 16, backgroundColor: "#fff" },
-  h2: { fontSize: 16, fontWeight: "900", color: "#111" },
-  note: { marginTop: 6, fontSize: 13, color: "#666", marginBottom: 12 },
-
-  cameraWrap: { marginTop: 12, borderRadius: 16, overflow: "hidden", backgroundColor: "#f2f2f2" },
-  camera: { width: "100%", height: 340 },
-
-  btn: { paddingVertical: 14, borderRadius: 14, alignItems: "center", justifyContent: "center", marginTop: 10 },
-  btnPrimary: { backgroundColor: "#2b6cff" },
-  btnDark: { backgroundColor: "#111827" },
-  btnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
-
-  footer: { marginTop: 14, fontSize: 12, color: "#777", textAlign: "center" },
+  content: { padding: 16 },
+  h1: { fontSize: 20, fontWeight: "900", color: COLORS.text },
+  p: { marginTop: 8, color: COLORS.muted, lineHeight: 20 },
+  cta: {
+    marginTop: 14,
+    backgroundColor: COLORS.red,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  ctaText: { color: "#fff", fontWeight: "900", fontSize: 16 },
+  smallHint: { marginTop: 14, color: COLORS.muted, fontSize: 12 },
 });

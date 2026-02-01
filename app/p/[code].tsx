@@ -1,287 +1,235 @@
+// app/p/[code].tsx
 import React, { useMemo, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  Image,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
-
-
-/* ================= TEMAX COLORS ================= */
-const COLORS = {
-  bg: "#ffffff",
-  header: "#2b2b2b",
-  card: "#b0b0b0",
-  border: "#e5e5e5",
-  text: "#ffffff",
-  muted: "#666666",
-  red: "#E2222E",
-};
-
-/* ================= DATA ================= */
-const PROJECTS: Record<string, any> = {
-  bathroom_001: {
-    title: "Баня • Проект 001",
-    subtitle: "Гранитогрес + мебели от Temax",
-    tags: ["60×120", "черни акценти", "LED ниша", "LED огледало"],
-    images: [
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1600",
-      "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?w=1600",
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1600",
-    ],
-    idea:
-      "Съвременна баня в светли тонове с голямоформатни плочки 60×120, черни смесители и LED акценти.",
-    materials: [
-      { sku: "GR-60120", name: "Гранитогрес 60×120", qty: "18 м²" },
-      { sku: "MX-BLACK", name: "Черни смесители", qty: "1 комплект" },
-      { sku: "LED-3000K", name: "LED лента 3000K", qty: "3 м" },
-    ],
-  },
-};
+import { View, Text, StyleSheet, ScrollView, Image, Pressable, Dimensions } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { COLORS } from "../../constants/theme";
+import { PROJECTS, Project, MaterialItem } from "../../constants/projects";
 
 export default function ProjectPage() {
-  const { code } = useLocalSearchParams<{ code?: string }>();
-  const project = useMemo(() => PROJECTS[String(code)], [code]);
-  const [active, setActive] = useState(0);
+  const router = useRouter();
+  const params = useLocalSearchParams<{ code?: string }>();
+  const code = String(params.code || "").trim();
 
-  const W = Dimensions.get("window").width;
-  const sliderW = W - 32;
-  const sliderH = Math.round(sliderW * 0.6);
+  const project: Project | null = useMemo(() => {
+    return PROJECTS[code] ?? null;
+  }, [code]);
+
+  const [activeIdx, setActiveIdx] = useState<number>(0);
+  const width = Dimensions.get("window").width;
 
   if (!project) {
     return (
-      <View style={s.center}>
-        <Text>Проектът не е намерен</Text>
+      <View style={s.page}>
+        <View style={s.header}>
+          <Pressable style={s.backBtn} onPress={() => router.back()}>
+            <Text style={s.backText}>←</Text>
+          </Pressable>
+          <Text style={s.headerTitle}>Проект</Text>
+        </View>
+
+        <View style={s.center}>
+          <Text style={s.h1}>Няма такъв проект</Text>
+          <Text style={s.p}>Код: {code || "(празен)"}</Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <ScrollView style={s.page}>
-<View style={s.header}>
-  <View style={s.logoWrap}>
-    <Image
-      source={require("../../assets/images/logo.png")}
-      style={s.logo}
-    />
-  </View>
+    <View style={s.page}>
+      <View style={s.header}>
+        <Pressable style={s.backBtn} onPress={() => router.back()}>
+          <Text style={s.backText}>←</Text>
+        </Pressable>
 
-  <Text style={s.headerTitle}>Готов проект</Text>
-</View>
+        {/* Слот за лого (ти после слагаш image) */}
+        <View style={s.logoSlot}>
+          <Text style={s.logoText}>LOGO</Text>
+        </View>
 
+        <Text style={s.headerTitle} numberOfLines={1}>
+          Готов проект
+        </Text>
+      </View>
 
-
-      {/* ============ CONTENT ============ */}
-      <View style={s.container}>
-        {/* Slider */}
+      <ScrollView contentContainerStyle={s.content}>
+        {/* Slider Card */}
         <View style={s.sliderCard}>
           <ScrollView
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => {
-              const i = Math.round(
-                e.nativeEvent.contentOffset.x / sliderW
-              );
-              setActive(i);
+            onScroll={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              const idx = Math.round(x / (width - 32));
+              setActiveIdx(idx);
             }}
+            scrollEventThrottle={16}
           >
-            {project.images.map((img: string, i: number) => (
-              <Image
-                key={i}
-                source={{ uri: img }}
-                style={{ width: sliderW, height: sliderH }}
-              />
+            {project.images.map((img: string, idx: number) => (
+              <View key={`${project.code}-${idx}`} style={[s.slide, { width: width - 32 }]}>
+                <Image source={{ uri: img }} style={s.slideImg} />
+              </View>
             ))}
           </ScrollView>
 
           <View style={s.dots}>
-            {project.images.map((_: any, i: number) => (
+            {project.images.map((_img: string, idx: number) => (
               <View
-                key={i}
-                style={[
-                  s.dot,
-                  i === active && { backgroundColor: COLORS.red },
-                ]}
+                key={`dot-${idx}`}
+                style={[s.dot, idx === activeIdx ? s.dotActive : null]}
               />
             ))}
           </View>
         </View>
 
         {/* Title */}
+        <Text style={s.codeSmall}>{project.code}</Text>
         <Text style={s.title}>{project.title}</Text>
-        <Text style={s.subtitle}>{project.subtitle}</Text>
+        {project.subtitle ? <Text style={s.subtitle}>{project.subtitle}</Text> : null}
 
         {/* Tags */}
-        <View style={s.tags}>
-          {project.tags.map((t: string) => (
-            <View key={t} style={s.tag}>
-              <Text style={s.tagText}>{t}</Text>
-            </View>
-          ))}
-        </View>
+        {project.tags?.length ? (
+          <View style={s.tagsWrap}>
+            {project.tags.map((t: string) => (
+              <View key={t} style={s.chip}>
+                <Text style={s.chipText}>{t}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         {/* Idea */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>Идея</Text>
-          <Text style={s.text}>{project.idea}</Text>
-        </View>
+        {project.idea ? (
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>Идея</Text>
+            <Text style={s.sectionText}>{project.idea}</Text>
+          </View>
+        ) : null}
 
         {/* Materials */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>Използвани материали</Text>
-          {project.materials.map((m: any) => (
-            <View key={m.sku} style={s.material}>
-              <Text style={s.materialName}>{m.name}</Text>
-              <Text style={s.materialMeta}>
-                Код: {m.sku} • {m.qty}
-              </Text>
-            </View>
-          ))}
-        </View>
+        {project.materials?.length ? (
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>Използвани материали</Text>
 
-        {/* CTA */}
-        <Pressable style={s.cta}>
-          <Text style={s.ctaText}>Поискай оферта за този проект</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+            <View style={s.list}>
+              {project.materials.map((m: MaterialItem, idx: number) => (
+                <View key={`${m.code}-${idx}`} style={s.item}>
+                  <Text style={s.itemName}>{m.name}</Text>
+                  <Text style={s.itemSub}>
+                    Код: {m.code}
+                    {m.qty ? ` • ${m.qty}` : ""}
+                    {m.note ? ` • ${m.note}` : ""}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        <View style={{ height: 28 }} />
+      </ScrollView>
+    </View>
   );
 }
 
-/* ================= STYLES ================= */
 const s = StyleSheet.create({
-  page: { backgroundColor: COLORS.bg, flex: 1 },
-
-
-  logoBox: {
-    width: 48,
-    height: 48,
-    backgroundColor: "#444",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 6,
-  },
- 
-
-  container: { padding: 16 },
-
-  sliderCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  dots: {
-    flexDirection: "row",
-    justifyContent: "center",
-    padding: 8,
-    gap: 6,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ccc",
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
-    marginTop: 16,
-    color: COLORS.text,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.muted,
-    marginBottom: 12,
-  },
-
-  tags: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 16,
-  },
-  tag: {
-    backgroundColor: COLORS.red,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  tagText: { fontSize: 12, fontWeight: "600" },
-
-  card: {
-    backgroundColor: COLORS.card,
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 6,
-  },
-  text: { fontSize: 14, color: "#fff", lineHeight: 20 },
-
-  material: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.header,
-  },
-  materialName: { fontWeight: "600" },
-  materialMeta: { fontSize: 12, color:"#fff" },
-
-  cta: {
-    backgroundColor: COLORS.red,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  ctaText: {
-    color: "#fff",
-    fontWeight: "800",
-    fontSize: 15,
-  },
-
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  page: { flex: 1, backgroundColor: COLORS.bg },
 
   header: {
-  backgroundColor: "#2b2b2b",
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  gap: 12,
-},
+    backgroundColor: COLORS.headerBg,
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  backBtn: {
+    width: 36,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: "#00000055",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ffffff22",
+  },
+  backText: { color: "#fff", fontSize: 18, fontWeight: "900" },
 
-logoWrap: {
-  width: 44,
-  height: 44,
-  borderRadius: 10,
-  backgroundColor: "#ffffff",
-  alignItems: "center",
-  justifyContent: "center",
-  overflow: "hidden",
-},
+  logoSlot: {
+    width: 46,
+    height: 30,
+    borderRadius: 6,
+    backgroundColor: "#00000055",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ffffff22",
+  },
+  logoText: { color: "#fff", fontSize: 11, fontWeight: "900" },
 
-logo: {
-  width: 34,
-  height: 34,
-  resizeMode: "contain",
-},
+  headerTitle: { flex: 1, color: "#fff", fontSize: 16, fontWeight: "900" },
 
-headerTitle: {
-  color: "#ffffff",
-  fontSize: 18,
-  fontWeight: "800",
-},
+  content: { padding: 16, paddingBottom: 24 },
 
+  sliderCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: "hidden",
+  },
+  slide: { height: 220, backgroundColor: COLORS.soft },
+  slideImg: { width: "100%", height: "100%" },
+
+  dots: {
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    backgroundColor: "#fff",
+  },
+  dot: { width: 8, height: 8, borderRadius: 99, backgroundColor: "#D0D0D0" },
+  dotActive: { backgroundColor: COLORS.red },
+
+  codeSmall: { marginTop: 12, color: COLORS.muted, fontSize: 12 },
+  title: { marginTop: 4, fontSize: 26, fontWeight: "900", color: COLORS.text },
+  subtitle: { marginTop: 6, color: COLORS.muted, fontSize: 14 },
+
+  tagsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+  chip: {
+    backgroundColor: COLORS.red,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  chipText: { color: "#fff", fontWeight: "900" },
+
+  section: {
+    marginTop: 14,
+    backgroundColor: COLORS.soft,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  sectionTitle: { fontSize: 18, fontWeight: "900", color: COLORS.text },
+  sectionText: { marginTop: 8, color: COLORS.text, lineHeight: 22 },
+
+  list: { marginTop: 10, gap: 10 },
+  item: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 12,
+  },
+  itemName: { fontWeight: "900", color: COLORS.text, fontSize: 16 },
+  itemSub: { marginTop: 4, color: COLORS.muted },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 16 },
+  h1: { fontSize: 18, fontWeight: "900", color: COLORS.text },
+  p: { marginTop: 8, color: COLORS.muted },
 });
