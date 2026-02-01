@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 
+
 /* ================= TEMAX COLORS ================= */
 const COLORS = {
   bg: "#ffffff",
@@ -64,7 +65,8 @@ export default function ProjectPage() {
       {/* ============ HEADER ============ */}
       <View style={s.header}>
         <View style={s.logoBox}>
-          <Text style={s.logoText}>LOGO</Text>
+          <Image source={require ("../../assets/images/1000011346.jpg")}
+       />
           
         </View>
         <Text style={s.headerTitle}>Готов проект</Text>
