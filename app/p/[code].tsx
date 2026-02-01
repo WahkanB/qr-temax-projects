@@ -157,13 +157,7 @@ export default function ProjectPage() {
 const s = StyleSheet.create({
   page: { backgroundColor: COLORS.bg, flex: 1 },
 
-  header: {
-    backgroundColor: COLORS.header,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
+
   logoBox: {
     width: 48,
     height: 48,
@@ -172,12 +166,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 6,
   },
-  logoText: { color: "#ccc", fontSize: 10 },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
+ 
 
   container: { padding: 16 },
 
@@ -264,7 +253,14 @@ const s = StyleSheet.create({
 
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
 
-
+  header: {
+  backgroundColor: "#2b2b2b",
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  gap: 12,
+},
 
 logoWrap: {
   width: 44,
@@ -282,6 +278,10 @@ logo: {
   resizeMode: "contain",
 },
 
-
+headerTitle: {
+  color: "#ffffff",
+  fontSize: 18,
+  fontWeight: "800",
+},
 
 });
