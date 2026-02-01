@@ -65,7 +65,7 @@ export default function ProjectPage() {
       {/* ============ HEADER ============ */}
       <View style={s.header}>
         <View style={s.logoBox}>
-          <Image source={require ("../../assets/images/1000011346.jpg")}
+          <Image source={require ("../../assets/images/temax logo.png")}
        />
           
         </View>
