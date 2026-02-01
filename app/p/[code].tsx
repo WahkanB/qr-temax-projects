@@ -65,6 +65,7 @@ export default function ProjectPage() {
       <View style={s.header}>
         <View style={s.logoBox}>
           <Text style={s.logoText}>LOGO</Text>
+          
         </View>
         <Text style={s.headerTitle}>Готов проект</Text>
       </View>
@@ -239,7 +240,7 @@ const s = StyleSheet.create({
   material: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: COLORS.header,
   },
   materialName: { fontWeight: "600" },
   materialMeta: { fontSize: 12, color:"#fff" },
