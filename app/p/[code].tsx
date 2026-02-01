@@ -62,15 +62,18 @@ export default function ProjectPage() {
 
   return (
     <ScrollView style={s.page}>
-      {/* ============ HEADER ============ */}
-      <View style={s.header}>
-        <View style={s.logoBox}>
-          <Image source={require ("../../assets/images/temax logo.png")}
-       />
-          
-        </View>
-        <Text style={s.headerTitle}>Готов проект</Text>
-      </View>
+<View style={s.header}>
+  <View style={s.logoWrap}>
+    <Image
+      source={require("../../assets/images/logo.png")}
+      style={s.logo}
+    />
+  </View>
+
+  <Text style={s.headerTitle}>Готов проект</Text>
+</View>
+
+
 
       {/* ============ CONTENT ============ */}
       <View style={s.container}>
@@ -260,4 +263,25 @@ const s = StyleSheet.create({
   },
 
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
+
+
+
+logoWrap: {
+  width: 44,
+  height: 44,
+  borderRadius: 10,
+  backgroundColor: "#ffffff",
+  alignItems: "center",
+  justifyContent: "center",
+  overflow: "hidden",
+},
+
+logo: {
+  width: 34,
+  height: 34,
+  resizeMode: "contain",
+},
+
+
+
 });
