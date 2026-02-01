@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, Image, Pressable, Dimensions } from
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { COLORS } from "../../constants/theme";
 import { PROJECTS, Project, MaterialItem } from "../../constants/projects";
+export const dynamic = "force-dynamic";
 
 export default function ProjectPage() {
   const router = useRouter();
